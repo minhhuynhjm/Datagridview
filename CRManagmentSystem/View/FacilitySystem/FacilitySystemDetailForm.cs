@@ -54,6 +54,7 @@ namespace CRManagmentSystem.View.FacilitySystem
 
         }
 
+        public Graphics Graphics { get; set; }
         /// <summary>
         /// Button Close: 閉じる
         /// </summary>
@@ -205,16 +206,28 @@ namespace CRManagmentSystem.View.FacilitySystem
             dgv.Rows[2].Cells[2] = cboCell;
 
 
-            HMergedCell pCell;
-            //for (i = 0; i < 3; i++)
+            //HMergedCell pCell;
+            ////for (i = 0; i < 3; i++)
+            ////{
+            //for (int x = 3; x <= 6; x++)
             //{
-            for (int x = 3; x <= 6; x++)
-            {
-                dgv.Rows[0].Cells[x] = new HMergedCell();
-                pCell = (HMergedCell)dgv.Rows[0].Cells[x];
-                pCell.LeftColumn = 3;
-                pCell.RightColumn = 6;
-            }
+            //    dgv.Rows[0].Cells[x] = new HMergedCell();
+            //    pCell = (HMergedCell)dgv.Rows[0].Cells[x];
+            //    pCell.LeftColumn = 3;
+            //    pCell.RightColumn = 6;
+            //}
+
+            //for (int x = 7; x <= 9; x++)
+            //{
+            //    dgv.Rows[0].Cells[x] = new HMergedCell();
+            //    pCell = (HMergedCell)dgv.Rows[0].Cells[x];
+            //    pCell.LeftColumn = 7;
+            //    pCell.RightColumn = 9;
+            //}
+
+            MergeCell(dgv, 3, 6, 0);
+            MergeCell(dgv, 7, 9, 0);
+            MergeCell(dgv, 10, 11, 0);
 
             //}
 
@@ -232,9 +245,46 @@ namespace CRManagmentSystem.View.FacilitySystem
                 dgv.Rows[1].Cells[i].Value = item.DIVISIONNAME;
                 ++i;
             }
-
+            //dgv.AdvancedCellBorderStyle.All = DataGridViewAdvancedCellBorderStyle.None;
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.None;
             dgv.CellPainting += Dgv_CellPainting;
+            dgv.ReadOnly = true;
+            DataGridViewCell cell = dgv[2, 2];
+            //dgv[3,0].
+            //var bond = dgv[2, 2].ContentBounds;
+            //var ga = dgv.CreateGraphics();
+            //DrawRectangleRectangle(ga, bond);
+            DataGridViewAdvancedBorderStyle style = new DataGridViewAdvancedBorderStyle();
+            style.All = DataGridViewAdvancedCellBorderStyle.Single;
+            dgv[2, 2].AdjustCellBorderStyle(style, style, true, true, false, false);
             tag.Controls.Add(dgv);
+        }
+
+        public void MergeCell(DataGridView dgv, int leftColumn, int rightColumn, int RowIndex)
+        {
+            HMergedCell pCell;
+            for (int i = leftColumn; i <= rightColumn; i++)
+            {
+                dgv.Rows[0].Cells[i] = new HMergedCell();
+                pCell = (HMergedCell)dgv.Rows[RowIndex].Cells[i];
+                pCell.LeftColumn = leftColumn;
+                pCell.RightColumn = rightColumn;
+            }
+        }
+
+        public void DrawRectangleRectangle(Graphics graphics, Rectangle rect)
+        {
+            var e = graphics;
+            // Create pen.
+            Pen blackPen = new Pen(Color.Black, 1);
+
+            // Create rectangle.
+            //Rectangle rect = new Rectangle(0, 0, 200, 200);
+            rect.Width -= 2;
+            rect.Height -= 2;
+
+            // Draw rectangle to screen.
+            e.DrawRectangle(blackPen, rect);
         }
 
         private void Dgv_Paint(object sender, PaintEventArgs e)
@@ -277,6 +327,7 @@ namespace CRManagmentSystem.View.FacilitySystem
             TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
             DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
             //e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.Single;
+            
             if (e.RowIndex > 0)
             {
                 if (!string.IsNullOrEmpty(e.Value?.ToString()))
