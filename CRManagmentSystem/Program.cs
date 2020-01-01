@@ -19,6 +19,7 @@ namespace CRManagmentSystem
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             CommonConstant.LoginForm = new LoginForm();
+            //Application.Run(new TestForm());
             Application.Run(new FacilitySystemDetailForm(CommonConstant.FacilityDetailMode.SystemEdit, null, null));
         }
     }

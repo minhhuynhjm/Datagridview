@@ -12,6 +12,7 @@ namespace CRManagmentSystem.View.FacilitySystem
 {
     public partial class FacilitySystemDetailForm : Form
     {
+        private Dictionary<string, short> MaxPatternTable = new Dictionary<string, short>();
         public FacilitySystemDetailForm(CommonConstant.FacilityDetailMode mode, string DeviceOrChildId, string SystemSearchValue)
         {
             #region Load DLL
@@ -50,6 +51,7 @@ namespace CRManagmentSystem.View.FacilitySystem
             //dynamic instance = CommonConstant.InstanceDictionaries[FunctionDllConstant.FacilitySystemBLO];
             //CheckRoleShowButton(instance, "hcminh", mode);
             CreateTabPage();
+
         }
 
         /// <summary>
@@ -195,80 +197,107 @@ namespace CRManagmentSystem.View.FacilitySystem
             }
             CountPattern = listFac.Max(x => x.PATTERN);
             dgv.Rows[2].Cells[0].Value = deviceId;
-            //dgv.Rows[2].Cells[0].AdjustCellBorderStyle
-            //DataGridViewComboBoxCell cboCell = new DataGridViewComboBoxCell();
-            //cboCell.DataSource = listCombobox.Select(x => x.FACILITYNAME).ToList();
-            //cboCell.Value = "O2";
-            //cboCell.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
-            //dgv.Rows[2].Cells[2] = cboCell;
+            //dgv.AutoGenerateColumns = false;
+            DataGridViewComboBoxCell cboCell = new DataGridViewComboBoxCell();
+            cboCell.DataSource = listCombobox.Select(x => x.FACILITYNAME).ToList();
+            cboCell.Value = "O2";
+            cboCell.DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing;
+            dgv.Rows[2].Cells[2] = cboCell;
+
+
+            HMergedCell pCell;
+            //for (i = 0; i < 3; i++)
+            //{
+            for (int x = 3; x <= 6; x++)
+            {
+                dgv.Rows[0].Cells[x] = new HMergedCell();
+                pCell = (HMergedCell)dgv.Rows[0].Cells[x];
+                pCell.LeftColumn = 3;
+                pCell.RightColumn = 6;
+            }
+
+            //}
+
+            //for (int z = 3; z < 7; z++)
+            //{
+            //    dgv.Rows[0].Cells[z].Value = "CR閉じる";
+            //}
+
+
+            i = 2;
+            foreach (var item in mstDivisionHeader)
+            {
+                //dgv.Columns.Add(new DataGridViewColumn { Name = item.DIVISIONID, CellTemplate = new DataGridViewTextBoxCell(), AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells });
+                dgv.Rows[0].Cells[i].Value = item.STRING1;
+                dgv.Rows[1].Cells[i].Value = item.DIVISIONNAME;
+                ++i;
+            }
+
             dgv.CellPainting += Dgv_CellPainting;
-            //HMergedCell pCell;
-            //for (int x = 3; x <= 6; x++)
-            //{
-            //    dgv.Rows[0].Cells[x] = new HMergedCell();
-            //    pCell = (HMergedCell)dgv.Rows[0].Cells[x];
-            //    pCell.LeftColumn = 3;
-            //    pCell.LeftColumn = 6;
-            //}
-
-            //for (int z = 3; z <= 6; z++)
-            //{
-            //    dgv.Rows[0].Cells[z].Value = device;
-            //}
-
-            //dgv.Columns.Insert(7, new DataGridViewColumn { CellTemplate = new DataGridViewTextBoxCell(), AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells, ReadOnly = true });
             tag.Controls.Add(dgv);
+        }
+
+        private void Dgv_Paint(object sender, PaintEventArgs e)
+        {
+            //e.Graphics.DrawRectangles();
+        }
+
+        private void Dgv_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+            if (e.RowIndex == 2)
+            {
+                // Calculate the bounds of the row
+                int rowHeaderWidth = dgv.RowHeadersVisible ?
+                                     dgv.RowHeadersWidth : 0;
+                Rectangle rowBounds = new Rectangle(
+                    rowHeaderWidth,
+                    e.RowBounds.Top,
+                    dgv.Columns.GetColumnsWidth(
+                            DataGridViewElementStates.Visible) -
+
+                            dgv.HorizontalScrollingOffset + 1,
+                   e.RowBounds.Height);
+
+                // Paint the border
+                ControlPaint.DrawBorder(e.Graphics, rowBounds,
+                                 Color.Red, ButtonBorderStyle.Solid);
+
+                // Paint the background color
+                dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor =
+                                                     Color.BlanchedAlmond;
+            }
 
         }
 
+        public Random rand = new Random();
         private void Dgv_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            // One time su ly bang bien count column 
-            //if (string.IsNullOrEmpty(e.Value?.ToString()))
-            //{
-            //    e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.None;
-            //}
-            //else
-            //{
-            //    if (e.RowIndex != 0)
-            //    {
-            //        e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.Single;
-            //    }
-            //    else
-            //    {
-            //        e.AdvancedBorderStyle.Top = DataGridViewAdvancedCellBorderStyle.None;
-            //    }
-            //}
-
-            if (e.ColumnIndex > 2 && e.RowIndex == 0)
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+            //e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.Single;
+            if (e.RowIndex > 0)
             {
-                int RowIndex = e.RowIndex;
-                int ColumnIndex = e.ColumnIndex;
-                object valuex = e.Value;
-                TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
-                DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
-
-                var value = dgv.Rows[0].Cells[2].Value;
-
-                if (IsTheSameCellValue(e.ColumnIndex, e.RowIndex, dgv))
+                if (!string.IsNullOrEmpty(e.Value?.ToString()))
                 {
-                   // e.AdvancedBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.None;
+                    //e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.Border);
+                    e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.Border);
+                    using (Pen p = new Pen(Color.Black, 0.1F))
+                    {
+                        Rectangle rect = e.CellBounds;
+                        rect.Width -= 2;
+                        rect.Height -= 2;
+                        e.Graphics.DrawRectangle(p, rect);
+                    }
+                    e.Handled = true;
                 }
-
-
-                //e.AdvancedBorderStyle.Right = DataGridViewAdvancedCellBorderStyle.None;
-                string cell1 = e.Value?.ToString();
-                //string cell2 = e.
-                //if(IsTheSameCellValue(cell1))
+                else
+                {
+                    e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.None;
+                    e.Handled = true;
+                }
             }
-
-            //e.CellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            //var x = e.Value;
-            //if (e.ColumnIndex == 1 && e.RowIndex == 1)
-            //{
-            //    e.AdvancedBorderStyle.Bottom = DataGridViewAdvancedCellBorderStyle.None;
-            //}
-
         }
 
         /// <summary>
