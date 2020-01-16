@@ -83,6 +83,7 @@
     <Compile Include="Common\CommonUtility.cs" />
     <Compile Include="Common\CRManagmentSystemException.cs" />
     <Compile Include="Common\Dialog.cs" />
+    <Compile Include="Common\DoubleBuffered.cs" />
     <Compile Include="Common\FunctionDllConstant.cs" />
     <Compile Include="Common\HMergedCell.cs" />
     <Compile Include="Common\Logger.cs" />

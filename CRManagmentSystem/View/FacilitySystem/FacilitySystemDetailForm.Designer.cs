@@ -1,4 +1,6 @@
-﻿namespace CRManagmentSystem.View.FacilitySystem
+﻿using System.Windows.Forms;
+
+namespace CRManagmentSystem.View.FacilitySystem
 {
     partial class FacilitySystemDetailForm
     {
@@ -150,7 +152,6 @@
             this.Text = "装置系統詳細画面";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

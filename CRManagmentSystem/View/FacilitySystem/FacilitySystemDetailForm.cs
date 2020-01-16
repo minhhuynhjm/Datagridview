@@ -154,6 +154,8 @@ namespace CRManagmentSystem.View.FacilitySystem
             TabPage tag = tabControlFacilitySystem.TabPages[tabId];
             //DataGridView dgv = new DataGridView();
             DataGridView dgv = tag.Controls.OfType<DataGridView>().FirstOrDefault();
+            System.Windows.Forms.DataGridView da = new System.Windows.Forms.DataGridView();
+            //dgv.DoubleBuffered(true);
             dgv.AllowUserToAddRows = false;
             dgv.Dock = DockStyle.Fill;
             dgv.BackgroundColor = Color.White;
@@ -162,7 +164,8 @@ namespace CRManagmentSystem.View.FacilitySystem
             dgv.ColumnHeadersVisible = false;
             dgv.RowHeadersVisible = false;
             dgv.AutoGenerateColumns = false;
-
+            dgv.MultiSelect = true;
+            dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
             // Select Rows
             //dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
@@ -248,6 +251,7 @@ namespace CRManagmentSystem.View.FacilitySystem
             //dgv.AdvancedCellBorderStyle.All = DataGridViewAdvancedCellBorderStyle.None;
             dgv.CellBorderStyle = DataGridViewCellBorderStyle.None;
             dgv.CellPainting += Dgv_CellPainting;
+            dgv.CellClick += Dgv_CellClick;
             dgv.ReadOnly = true;
             DataGridViewCell cell = dgv[2, 2];
             //dgv[3,0].
@@ -256,11 +260,28 @@ namespace CRManagmentSystem.View.FacilitySystem
             //DrawRectangleRectangle(ga, bond);
             DataGridViewAdvancedBorderStyle style = new DataGridViewAdvancedBorderStyle();
             style.All = DataGridViewAdvancedCellBorderStyle.Single;
-            dgv[2, 2].AdjustCellBorderStyle(style, style, true, true, false, false);
+            
             tag.Controls.Add(dgv);
         }
 
-        public void MergeCell(DataGridView dgv, int leftColumn, int rightColumn, int RowIndex)
+        private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+            if(e.RowIndex == 1)
+            {
+                for (int i = 2; i < dgv.Rows.Count; ++i)
+                {
+                    if(!string.IsNullOrEmpty(dgv[e.ColumnIndex, e.RowIndex].Value?.ToString()))
+                    {
+                        dgv.Rows[i].Cells[e.ColumnIndex].Selected = true;
+                    }
+                }
+            }
+            
+        }
+
+        public void MergeCell(System.Windows.Forms.DataGridView dgv, int leftColumn, int rightColumn, int RowIndex)
         {
             HMergedCell pCell;
             for (int i = leftColumn; i <= rightColumn; i++)
@@ -271,6 +292,9 @@ namespace CRManagmentSystem.View.FacilitySystem
                 pCell.RightColumn = rightColumn;
             }
         }
+
+
+
 
         public void DrawRectangleRectangle(Graphics graphics, Rectangle rect)
         {
@@ -327,7 +351,7 @@ namespace CRManagmentSystem.View.FacilitySystem
             TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
             DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
             //e.AdvancedBorderStyle.All = DataGridViewAdvancedCellBorderStyle.Single;
-            
+
             if (e.RowIndex > 0)
             {
                 if (!string.IsNullOrEmpty(e.Value?.ToString()))
@@ -376,6 +400,37 @@ namespace CRManagmentSystem.View.FacilitySystem
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+
+            Int32 selectedCellCount = dgv.GetCellCount(DataGridViewElementStates.Selected);
+            if (selectedCellCount > 0)
+            {
+                if (dgv.AreAllCellsSelected(true))
+                {
+                    MessageBox.Show("All cells are selected", "Selected Cells");
+                }
+                else
+                {
+                    System.Text.StringBuilder sb =
+                        new System.Text.StringBuilder();
+
+                    for (int i = 0;
+                        i < selectedCellCount; i++)
+                    {
+                        sb.Append("Row: ");
+                        sb.Append(dgv.SelectedCells[i].RowIndex
+                            .ToString());
+                        sb.Append(", Column: ");
+                        sb.Append(dgv.SelectedCells[i].ColumnIndex
+                            .ToString());
+                        sb.Append(Environment.NewLine);
+                    }
+
+                    sb.Append("Total: " + selectedCellCount.ToString());
+                    MessageBox.Show(sb.ToString(), "Selected Cells");
+                }
+            }
 
         }
 
@@ -383,6 +438,7 @@ namespace CRManagmentSystem.View.FacilitySystem
         {
             TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
             DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+            dgv.SuspendLayout();
             int lineRowsSelected = dgv.CurrentCell.RowIndex;
             int rowCount = dgv.Rows.Count - 1;
             dgv.Rows.RemoveAt(lineRowsSelected);
@@ -397,6 +453,8 @@ namespace CRManagmentSystem.View.FacilitySystem
                     dgv.Rows[i].Cells[1].Value = ++j;
                 }
             }
+
+            dgv.ResumeLayout();
         }
 
         private void btnAddPattern_Click(object sender, EventArgs e)
@@ -404,11 +462,13 @@ namespace CRManagmentSystem.View.FacilitySystem
             ++CountPattern;
             TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
             DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
+            dgv.SuspendLayout();
             if (dgv != null)
             {
                 dgv.Rows.Add(new DataGridViewRow());
                 dgv.Rows[dgv.Rows.Count - 1].Cells[1].Value = CountPattern;
             }
+            dgv.ResumeLayout();
 
         }
 
@@ -422,7 +482,7 @@ namespace CRManagmentSystem.View.FacilitySystem
 
         }
 
-        private bool IsTheSameCellValue(int column, int row, DataGridView dgv)
+        private bool IsTheSameCellValue(int column, int row, System.Windows.Forms.DataGridView dgv)
         {
             if (dgv.Columns.Count > column + 1)
             {
