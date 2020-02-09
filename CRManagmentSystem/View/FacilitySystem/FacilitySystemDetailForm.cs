@@ -54,6 +54,8 @@ namespace CRManagmentSystem.View.FacilitySystem
 
         }
 
+        private Dictionary<string, Dictionary<int, string>> TabsAndRowChange = new Dictionary<string, Dictionary<int, string>>();
+
         public Graphics Graphics { get; set; }
         /// <summary>
         /// Button Close: 閉じる
@@ -133,6 +135,28 @@ namespace CRManagmentSystem.View.FacilitySystem
             listCombobox.Add(new MstFacilityCboModel { FACILITYID = "1100", FACILITYNAME = "Kr/Ne" });
             listCombobox.Add(new MstFacilityCboModel { FACILITYID = "1100", FACILITYNAME = "CO2" });
             listCombobox.Add(new MstFacilityCboModel { FACILITYID = "1100", FACILITYNAME = "O2" });
+
+            //foreach (var item in mstDivisionHeader)
+            //{
+            //    dgv.Columns.Add(new DataGridViewComboBoxColumn
+            //    {
+
+            //        Name = item.DIVISIONID,
+            //        DataSource = listCombobox,
+            //        DisplayMember = "FACILITYNAME",
+            //        ValueMember = "FACILITYID",
+            //        //CellTemplate = new DataGridViewComboBoxCell(),
+            //    });
+            //    DataGridViewTextBoxCell cell = new DataGridViewTextBoxCell();
+            //    cell.Value = item.STRING1;
+            //    dgv.Rows[0].Cells[i] = cell;
+            //    DataGridViewTextBoxCell cell1 = new DataGridViewTextBoxCell();
+            //    cell1.Value = item.DIVISIONNAME;
+            //    dgv.Rows[1].Cells[i] = cell1;
+            //    //dgv.Rows[0].Cells[i].Value = item.STRING1;
+            //    //dgv.Rows[1].Cells[i].Value = item.DIVISIONNAME;
+            //    ++i;
+            //}
 
             const string device = "装置";
             const string pattern = "パターン";
@@ -252,33 +276,92 @@ namespace CRManagmentSystem.View.FacilitySystem
             dgv.CellBorderStyle = DataGridViewCellBorderStyle.None;
             dgv.CellPainting += Dgv_CellPainting;
             dgv.CellClick += Dgv_CellClick;
-            dgv.ReadOnly = true;
-            DataGridViewCell cell = dgv[2, 2];
+            dgv.RowsAdded += Dgv_RowsAdded;
+            dgv.RowsRemoved += Dgv_RowsRemoved;
             //dgv[3,0].
             //var bond = dgv[2, 2].ContentBounds;
             //var ga = dgv.CreateGraphics();
             //DrawRectangleRectangle(ga, bond);
-            DataGridViewAdvancedBorderStyle style = new DataGridViewAdvancedBorderStyle();
-            style.All = DataGridViewAdvancedCellBorderStyle.Single;
-            
+            dgv.RowLeave += Dgv_RowLeave;
             tag.Controls.Add(dgv);
+        }
+
+        private void Dgv_RowLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if(e.RowIndex > 1)
+            {
+                TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+                string tableName = tagPage.Name.Split(':').LastOrDefault();
+                if (TabsAndRowChange.ContainsKey(tableName))
+                {
+                    if (!TabsAndRowChange[tableName].ContainsKey(e.RowIndex))
+                    {
+                        TabsAndRowChange[tableName].Add(e.RowIndex, tableName);
+                    }
+                }
+                else
+                {
+                    Dictionary<int, string> dic = new Dictionary<int, string>();
+                    dic[e.RowIndex] = tableName;
+                    TabsAndRowChange.Add(tableName, dic);
+                }
+            }
+        }
+
+        private void Dgv_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        {
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            string tableName = tagPage.Name.Split(':').LastOrDefault();
+            if (TabsAndRowChange.ContainsKey(tableName))
+            {
+                if (!TabsAndRowChange[tableName].ContainsKey(e.RowIndex))
+                {
+                    //TabsAndRowChange[tableName].Add(e.RowIndex, tableName);
+                    TabsAndRowChange[tableName].Remove(e.RowIndex);
+                }
+            }
+            else
+            {
+                Dictionary<int, string> dic = new Dictionary<int, string>();
+                dic[e.RowIndex] = tableName;
+                TabsAndRowChange.Add(tableName, dic);
+            }
+        }
+
+        private void Dgv_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
+            string tableName = tagPage.Name.Split(':').LastOrDefault();
+            if (TabsAndRowChange.ContainsKey(tableName))
+            {
+                if (!TabsAndRowChange[tableName].ContainsKey(e.RowIndex))
+                {
+                    TabsAndRowChange[tableName].Add(e.RowIndex, tableName);
+                }
+            }
+            else
+            {
+                Dictionary<int, string> dic = new Dictionary<int, string>();
+                dic[e.RowIndex] = tableName;
+                TabsAndRowChange.Add(tableName, dic);
+            }
         }
 
         private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             TabPage tagPage = tabControlFacilitySystem.TabPages[tabControlFacilitySystem.SelectedTab.Name];
             DataGridView dgv = tagPage.Controls.OfType<DataGridView>().FirstOrDefault();
-            if(e.RowIndex == 1)
+            if (e.RowIndex == 1)
             {
                 for (int i = 2; i < dgv.Rows.Count; ++i)
                 {
-                    if(!string.IsNullOrEmpty(dgv[e.ColumnIndex, e.RowIndex].Value?.ToString()))
+                    if (!string.IsNullOrEmpty(dgv[e.ColumnIndex, e.RowIndex].Value?.ToString()))
                     {
                         dgv.Rows[i].Cells[e.ColumnIndex].Selected = true;
                     }
                 }
             }
-            
+
         }
 
         public void MergeCell(System.Windows.Forms.DataGridView dgv, int leftColumn, int rightColumn, int RowIndex)
